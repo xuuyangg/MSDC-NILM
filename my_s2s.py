@@ -138,7 +138,7 @@ def get_arguments():
 
 args = get_arguments()
 # save_path='/result/redd_fa_132_'+str(args.seed)+'_'
-save_path = '/data/'
+save_path = '/content/drive/MyDrive/MSDC_RESULT/'
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 random.seed(args.seed)
@@ -149,50 +149,22 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
 
-def load_dataset():
-    # 训练测试不在同一房间
-    tra_x = args.data_dir + args.appliance_name + '_mains_' + 'tra_small'  # save path for mains
-    val_x = args.data_dir + args.appliance_name + '_mains_' + 'val'
+def load_dataset():   
 
-    tra_y = args.data_dir + args.appliance_name + '_tra_small' + '_' + 'pointnet'  # save path for target
-    val_y = args.data_dir + args.appliance_name + '_val' + '_' + 'pointnet'
-
-    tra_s = args.data_dir + args.appliance_name + '_tra_small' + '_' + 'pointnet_s'  # save path for target
-    val_s = args.data_dir + args.appliance_name + '_val' + '_' + 'pointnet_s'
-
-    test_x = args.data_dir + args.appliance_name + '_test_x'
-    test_y = args.data_dir + args.appliance_name + '_test_gt'
-    test_s = args.data_dir + args.appliance_name + '_test_gt_s'
-     #单房间
-    # tra_x = args.data_dir + args.appliance_name + 'house6' + '_mains_' + 'tra_small'  # save path for mains
-    # val_x = args.data_dir + args.appliance_name + 'house6' + '_mains_' + 'val'
-    #
-    # tra_y = args.data_dir + args.appliance_name + 'house6' + '_tra_small' + '_' + 'pointnet'  # save path for target
-    # val_y = args.data_dir + args.appliance_name + 'house6' + '_val' + '_' + 'pointnet'
-    #
-    #
-    # tra_s = args.data_dir + args.appliance_name + 'house6' + '_tra_small' + '_' + 'pointnet_s'  # save path for target
-    # val_s = args.data_dir + args.appliance_name + 'house6' + '_val' + '_' + 'pointnet_s'
-    #
-    # test_x = args.data_dir + args.appliance_name + 'house6' + '_test_x'
-    # test_y = args.data_dir + args.appliance_name + 'house6' + '_test_gt'
-    # test_s = args.data_dir + args.appliance_name + 'house6' + '_test_gt_s'
-
-    tra_set_x = np.load(tra_x + '.npy').astype(np.float32)
-    tra_set_y = np.load(tra_y + '.npy').astype(np.float32)
-    tra_set_s = np.load(tra_s + '.npy').astype(np.float32)
-    val_set_x = np.load(val_x + '.npy').astype(np.float32)
-    val_set_y = np.load(val_y + '.npy').astype(np.float32)
-    val_set_s = np.load(val_s + '.npy').astype(np.float32)
-    test_set_x = np.load(test_x + '.npy').astype(np.float32)
-    test_set_y = np.load(test_y + '.npy').astype(np.float32)
-    test_set_s = np.load(test_s + '.npy').astype(np.float32)
+    import pandas as pd
+    path = f'/content/REDD'    
     
+    train = pd.read_csv(os.path.join(path, f'{args.appliance_name}_training_.csv'), header=None).to_numpy()
+    val = pd.read_csv(os.path.join(path, f'{args.appliance_name}_validation_.csv'), header=None).to_numpy()
+    test = pd.read_csv(os.path.join(path, f'{args.appliance_name}_test_.csv'), header = None).to_numpy()
 
-    print('training set:', tra_set_x.shape, tra_set_y.shape, tra_set_s.shape)
-    print('validation set:', val_set_x.shape, val_set_y.shape, val_set_s.shape)
-    print('testing set:', test_set_x.shape, test_set_y.shape, test_set_s.shape)
-
+    tra_set_x, tra_set_y, tra_set_s = train[:, 0], train[:, 1], train[:, 2]
+    val_set_x, val_set_y, val_set_s = val[:, 0],  val[:, 1], val[:, 2]
+    test_set_x, test_set_y, test_set_s = test[:, 0], test[:, 1], test[:, 2]
+    print('tra_set_x.shape: ', tra_set_s.shape)
+    print('val_set_x.shape: ', val_set_s.shape)
+    print('test_set_x.shape: ', test_set_s.shape)
+    
     return tra_set_x, tra_set_y, tra_set_s, val_set_x, val_set_y, val_set_s, test_set_x, test_set_y, test_set_s
 
 
@@ -202,8 +174,8 @@ tra_set_x, tra_set_y, tra_set_s, val_set_x, val_set_y, val_set_s, test_set_x, te
 # hyper parameters according to appliance
 window_len = 400
 out_len = 64
-state_num = 4  # params_appliance[args.appliance_name]['redd_house3_state_num']
-print(state_num)
+state_num = params_appliance[args.appliance_name]['redd_state_num']
+print(args.appliance_name,  state_num)
 offset = int(0.5 * (window_len - 1.0))
 
 tra_kwag = {
